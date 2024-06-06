@@ -52,73 +52,73 @@ int main() {
         // 高
         gli_point(GLI_POSITION.UF, GLI_COLORS.RED, 10);
 
-        gli_line(gli_pos_obj(-0.65, 0.9, 1), gli_pos_obj(0.65, 0.9, 1), GLI_COLORS.RED, 3);
-        gli_rectangle(gli_pos_obj(-0.4, 0.8, 1), gli_pos_obj(0.4, 0.4, 1), GLI_COLORS.RED, 3);
+        gli_line(gli_pos_obj(-0.65, 0.9, 1), gli_pos_obj(0.65, 0.9, 1), GLI_COLORS.RED, 10);
+        gli_rectangle(gli_pos_obj(-0.4, 0.75, 1), gli_pos_obj(0.4, 0.4, 1), GLI_COLORS.RED, 10);
 
         PointGLI line_4[] = {
             gli_pos_obj(-0.8, -1, 1), gli_pos_obj(-0.8, 0.2, 1),
             gli_pos_obj(0.8, 0.2, 1), gli_pos_obj(0.8, -1, 1),
         };
-        gli_line_strip(line_4, 4, GLI_COLORS.RED, 3);
+        gli_line_strip(line_4, 4, GLI_COLORS.RED, 10);
 
-        gli_rectangle(gli_pos_obj(-0.6, 0, 1), gli_pos_obj(0.6, -0.8, 1), GLI_COLORS.RED, 3);
+        gli_rectangle(gli_pos_obj(-0.6, 0, 1), gli_pos_obj(0.6, -0.8, 1), GLI_COLORS.RED, 10);
 
         // 考
-        gli_line(gli_pos_obj(1, 1, 0), gli_pos_obj(1, 0.3, 0), GLI_COLORS.GREEN, 3);
-        gli_line(gli_pos_obj(1, 0.7, 0.3), gli_pos_obj(1, 0.7, -0.3), GLI_COLORS.GREEN, 3);
-        gli_line(gli_pos_obj(1, 0.3, 0.7), gli_pos_obj(1, 0.3, -0.7), GLI_COLORS.GREEN, 3);
+        gli_line(gli_pos_obj(1, 1, 0), gli_pos_obj(1, 0.3, 0), GLI_COLORS.GREEN, 10);
+        gli_line(gli_pos_obj(1, 0.7, 0.3), gli_pos_obj(1, 0.7, -0.3), GLI_COLORS.GREEN, 10);
+        gli_line(gli_pos_obj(1, 0.3, 0.7), gli_pos_obj(1, 0.3, -0.7), GLI_COLORS.GREEN, 10);
 
         gli_line(
             gli_pos_obj(1, 0.7, -0.7),
             gli_pos_obj(1, -0.1, 0.6),
-            GLI_COLORS.GREEN, 3
+            GLI_COLORS.GREEN, 10
         );
 
-        gli_line(gli_pos_obj(1, -0.2, 0.2), gli_pos_obj(1, -0.2, -0.5), GLI_COLORS.GREEN, 3);
+        gli_line(gli_pos_obj(1, -0.2, 0.2), gli_pos_obj(1, -0.2, -0.5), GLI_COLORS.GREEN, 10);
 
         PointGLI kao_line_4[] = {
             gli_pos_obj(1, 0, 0.2), gli_pos_obj(1, -0.5, 0.2),
             gli_pos_obj(1, -0.5, -0.5), gli_pos_obj(1, -1, -0.5),
         };
-        gli_line_strip(kao_line_4, 4, GLI_COLORS.GREEN, 3);
+        gli_line_strip(kao_line_4, 4, GLI_COLORS.GREEN, 10);
 
-        gli_line(gli_pos_obj(1, -0.8, 0.2), gli_pos_obj(1, -0.8, -0.5), GLI_COLORS.GREEN, 3);
+        gli_line(gli_pos_obj(1, -0.8, 0.2), gli_pos_obj(1, -0.8, -0.5), GLI_COLORS.GREEN, 10);
 
         // 加
-        gli_line(gli_pos_obj(0.5, 1, -1), gli_pos_obj(0.6, -1, -1), GLI_COLORS.BLUE, 3);
+        gli_line(gli_pos_obj(0.5, 1, -1), gli_pos_obj(0.6, -1, -1), GLI_COLORS.BLUE, 10);
 
         PointGLI jia_line_3[] = {
             gli_pos_obj(1, 0.2, -1), gli_pos_obj(0, 0.2, -1),
             gli_pos_obj(0.1, -1, -1),
         };
-        gli_line_strip(jia_line_3, 3, GLI_COLORS.BLUE, 3);
+        gli_line_strip(jia_line_3, 3, GLI_COLORS.BLUE, 10);
 
         gli_rectangle(
             gli_pos_obj(-0.3, 0, -1), gli_pos_obj(-0.7, -0.8, -1),
-            GLI_COLORS.BLUE, 3
+            GLI_COLORS.BLUE, 10
         );
 
         // 油
-        gli_line(GLI_POSITION.LUB, gli_pos_obj(-1, 0.7, -0.7), fly_col1, 7);
-        gli_line(gli_pos_obj(-1, 0, -1), gli_pos_obj(-1, 0, -0.7), fly_col2, 7);
-        gli_line(GLI_POSITION.LDB, gli_pos_obj(-1, -0.7, -0.7), fly_col3, 7);
+        gli_line(GLI_POSITION.LUB, gli_pos_obj(-1, 0.7, -0.7), fly_col1, 10);
+        gli_line(gli_pos_obj(-1, 0, -1), gli_pos_obj(-1, 0, -0.7), fly_col2, 10);
+        gli_line(GLI_POSITION.LDB, gli_pos_obj(-1, -0.7, -0.7), fly_col3, 10);
 
         gli_rectangle_base(
             GLI_POSITION.LEFT, GLI_POSITION.LDF,
             GLI_COLORS.RED, GLI_COLORS.GREEN, GLI_COLORS.BLUE, GLI_COLORS.PURPLE,
-            0, 7
+            0, 10
         );
 
         gli_line(
             gli_pos_obj(-1, 0.5, 0.5),
             gli_pos_obj(-1, -1, 0.5),
-            GLI_COLORS.BLACK, 5
+            GLI_COLORS.BLACK, 10
         );
 
         gli_line(
             gli_pos_obj(-1, -0.5, 0),
             gli_pos_obj(-1, -0.5, 1),
-            GLI_COLORS.WHITE, 5
+            GLI_COLORS.WHITE, 10
         );
 
         glfwSwapBuffers(window);
