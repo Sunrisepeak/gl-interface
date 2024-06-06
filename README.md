@@ -1,4 +1,4 @@
-# GLI - GL Interface
+# GLI - GL Interface | WIP
 
 gli是一个迷你的图形库抽象层接口
 
@@ -12,4 +12,6 @@ gli是一个迷你的图形库抽象层接口
 
 ## 演示Demo
 
-| ![](docs/imgs/gli-space-coordinate.gif) | ![](docs/imgs/gli-gaokao-fly.gif) |
+![](docs/imgs/gli-space-coordinate.gif)
+
+![](docs/imgs/gli-gaokao-fly.gif)
