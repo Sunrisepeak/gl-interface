@@ -25,7 +25,7 @@ def gli_loader():
     global _gli_lib
 
     try:
-        _gli_lib = ctypes.CDLL(os.getcwd() + '/libs/libgli-opengl.so')
+        _gli_lib = ctypes.CDLL(os.getcwd() + '/build/linux/x86_64/release/libgli-opengl.so')
     except OSError as e:
         print(f"Failed to load the library: {e}")
     else:
