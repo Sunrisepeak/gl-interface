@@ -30,6 +30,8 @@
 #define BoolGLI bool
 #endif
 
+#define GLI_NORMAL GLI_POSITION
+
 #ifdef __cplusplus
 #define GLI_IF_CPP(expr) expr
 extern "C" {
@@ -43,7 +45,7 @@ enum DrawMode {
     GLI_LINE_STRIP = 2,
     GLI_LINE_LOOP = 3,
     GLI_TRIANGLES = 4,
-    GLI_TRIANGLE_STRIP = 5,
+    GLI_TRIANGLE_FAN = 5,
 };
 
 enum ColorMode {
@@ -66,7 +68,7 @@ typedef struct PointGLI {
     float x, y, z;
 } PointGLI;
 
-typedef PointGLI CamDirectionGLI;
+typedef PointGLI VectorGLI;
 
 typedef struct ColorGLI {
     float r, g, b, a;
@@ -183,6 +185,8 @@ struct GraphicsDataGLI {
 };
 
 // Core API
+GLI_API_V void * gli_malloc(unsigned int size);
+GLI_API_V void gli_free(void *ptr);
 GLI_API_V void gli_backend_init(void *extend);
 GLI_API_V void gli_viewport(int x, int y, int w, int h);
 GLI_API_V void gli_clear();
@@ -192,7 +196,7 @@ GLI_API_V void gli_backend_deinit();
 // Option - 3D Support
 GLI_API_V void gli_camera_pos(float x, float y, float z);
 GLI_API_V void gli_camera_target(float x, float y, float z);
-GLI_API_V void gli_camera_direction(CamDirectionGLI direction);
+GLI_API_V void gli_camera_direction(VectorGLI direction);
 GLI_API_V void gli_camera_fov(float fov);
 GLI_API_V void gli_camera_rotation(float angle);
 GLI_API_V void gli_camera_update();
@@ -227,11 +231,11 @@ GLI_API void gli_rectangle_base(
 
 // circle and ngon
 GLI_API void gli_circle(
-    PointGLI center, float radius, ColorGLI col,
+    PointGLI center, float radius, VectorGLI normal, ColorGLI col,
     int segmentsNum GLI_IF_CPP(= 0), float thickness GLI_IF_CPP(= 1.0)
 );
 GLI_API void gli_circle_filled(
-    PointGLI center, float radius, ColorGLI col,
+    PointGLI center, float radius, VectorGLI normal, ColorGLI col,
     int segmentsNum GLI_IF_CPP(= 0)
 );
 GLI_API void gli_ngon(
@@ -246,15 +250,28 @@ GLI_API void gli_ngon_filled(
 GLI_API void gli_polygon(PointGLI *points, int pNums, ColorGLI col, float thickness GLI_IF_CPP(= 1.0));
 GLI_API void gli_polygon_filled(PointGLI *points, int pNums, ColorGLI col);
 
+GLI_API void gli_bezier_curve(PointGLI *points, int pNums, ColorGLI col, int segmentsNum, float thickness GLI_IF_CPP(= 1.0));
+
 GLI_API void gli_coordinate();
 GLI_API void gli_space();
 
-// helper
+//// helper
+//math
 GLI_API float gli_sin(float x);
 GLI_API float gli_cos(float x);
-GLI_API void gli_generate_circle_vertices(float *vertices, float radius, int numSegments);
-GLI_API PointGLI gli_pos_obj(float x, float y, float z);
+GLI_API float gli_sqrt(float x);
+GLI_API float gli_fabs(float x);
+
+// data process
 GLI_API void gli_pos_normalization(PointGLI *p1, PointGLI *p2);
+GLI_API void gli_generate_circle_vertices(float *vertices, float radius, int numSegments);
+GLI_API PointGLI gli_de_casteljau(PointGLI *points, float nums, float t);
+
+// object
+GLI_API PointGLI gli_pos_obj(float x, float y, float z);
+GLI_API PointGLI gli_pos_plus(PointGLI p1, PointGLI p2);
+GLI_API PointGLI gli_pos_minus(PointGLI p1, PointGLI p2);
+GLI_API PointGLI gli_pos_scale(PointGLI p1, float scale);
 GLI_API PointGLI gli_col_obj(float x, float y, float z);
 
 #ifdef __cplusplus
@@ -270,6 +287,7 @@ GLI_API void gli_point(PointGLI p, ColorGLI col, float size) {
     data.colors = &col.r;
     data.vertices = &p.x;
     data.thickness = size;
+    data.filled = GLI_FALSE;
 
     gli_draw(&data);
 }
@@ -285,6 +303,7 @@ GLI_API void gli_line(PointGLI p1, PointGLI p2, ColorGLI col, float thickness) {
     data.colors = &col.r;
     data.vertices = vertices;
     data.thickness = thickness;
+    data.filled = GLI_FALSE;
 
     gli_draw(&data);
 }
@@ -298,6 +317,7 @@ GLI_API void gli_line_strip(PointGLI *points, int pNum, ColorGLI col, float thic
     data.colors = &col.r;
     data.vertices = &(points->x);
     data.thickness = thickness;
+    data.filled = GLI_FALSE;
 
     gli_draw(&data);
 }
@@ -323,6 +343,7 @@ GLI_API void gli_rectangle(PointGLI p1, PointGLI p2, ColorGLI col, float thickne
     data.vertexNums = 4;
     data.vertices = vertices;
     data.colors = &col.r;
+    data.filled = GLI_FALSE;
 
     gli_draw(&data);
 }
@@ -350,6 +371,7 @@ GLI_API void gli_rectangle_filled(PointGLI p1, PointGLI p2, ColorGLI col) {
     data.vertexNums = 6;
     data.vertices = vertices;
     data.colors = &col.r;
+    data.filled = GLI_TRUE;
 
     gli_draw(&data);
 }
@@ -382,6 +404,7 @@ GLI_API void gli_rectangle_base(
     data.vertices = vertices;
     data.colors = &colors[0].r;
     data.thickness = thickness;
+    data.filled = filled;
 
     gli_draw(&data);
 }
@@ -395,6 +418,8 @@ GLI_API void gli_polygon(PointGLI *points, int pNums, ColorGLI col, float thickn
     data.vertexNums = pNums;
     data.vertices = &(points[0].x);
     data.colors = &col.r;
+    data.thickness = thickness;
+    data.filled = GLI_FALSE;
 
     gli_draw(&data);
 }
@@ -409,11 +434,12 @@ GLI_API void gli_triangle_filled(PointGLI p1, PointGLI p2, PointGLI p3, ColorGLI
 
     PointGLI vertices[3] = {p1, p2, p3};
 
-    data.mode.draw = GLI_TRIANGLE_STRIP;
+    data.mode.draw = GLI_TRIANGLES;
     data.mode.color = GLI_COL_ONE;
     data.vertexNums = 3;
     data.vertices = &(vertices[0].x);
     data.colors = &(col.r);
+    data.filled = GLI_TRUE;
 
     gli_draw(&data);
 }
@@ -434,28 +460,110 @@ GLI_API void gli_triangle_base(
     data.vertexNums = 3;
     data.vertices = &(vertices[0].x);
     data.colors = &(colors[0].r);
+    data.filled = GLI_TRUE;
 
     gli_draw(&data);
 }
 
 GLI_API void gli_circle(
-    PointGLI center, float radius, ColorGLI col,
+    PointGLI center, float radius, PointGLI normal, ColorGLI col,
     int segmentsNum, float thickness
 ) {
     struct GraphicsDataGLI data;
-    float vertices[3 * 100] = { center.x, center.y, 0 };
+    float staticBuff[(64 + 1) * 3] = { 0 };
+    float *vertices = staticBuff;
+    BoolGLI useDynamicBuff = segmentsNum > 64 ? GLI_TRUE : GLI_FALSE;
 
-    gli_generate_circle_vertices(vertices, radius, 36);
+    if (useDynamicBuff) {
+        vertices = (float *) gli_malloc((segmentsNum + 1) * 3 * sizeof(float));
+    }
+
+    vertices[0] = center.x;
+    vertices[1] = center.y;
+    vertices[2] = center.z;
+
+    vertices[3] = normal.x;
+    vertices[4] = normal.y;
+    vertices[5] = normal.z;
+
+    gli_generate_circle_vertices(vertices, radius, segmentsNum);
 
     data.mode.draw = GLI_LINE_LOOP;
     data.mode.color = GLI_COL_ONE;
-    data.vertexNums = 36;
+    data.vertexNums = segmentsNum;
     data.vertices = vertices;
     data.colors = &(col.r);
     data.thickness = thickness;
     data.filled = GLI_FALSE;
 
     gli_draw(&data);
+
+    if (useDynamicBuff) {
+        gli_free(vertices);
+    }
+}
+
+GLI_API void gli_circle_filled(
+    PointGLI center, float radius, PointGLI normal, ColorGLI col,
+    int segmentsNum
+) {
+    struct GraphicsDataGLI data;
+    float staticBuff[(64 + 1) * 3] = { 0 };
+    float *vertices = staticBuff;
+    BoolGLI useDynamicBuff = segmentsNum > 64 ? GLI_TRUE : GLI_FALSE;
+
+    if (useDynamicBuff) {
+        vertices = (float *) gli_malloc((segmentsNum + 1) * 3 * sizeof(float));
+    }
+
+    vertices[0] = center.x;
+    vertices[1] = center.y;
+    vertices[2] = center.z;
+
+    vertices[3] = normal.x;
+    vertices[4] = normal.y;
+    vertices[5] = normal.z;
+
+    gli_generate_circle_vertices(vertices, radius, segmentsNum);
+
+    data.mode.draw = GLI_TRIANGLE_FAN;
+    data.mode.color = GLI_COL_ONE;
+    data.vertexNums = segmentsNum;
+    data.vertices = vertices;
+    data.colors = &(col.r);
+    data.filled = GLI_TRUE;
+
+    gli_draw(&data);
+
+    if (useDynamicBuff) {
+        gli_free(vertices);
+    }
+}
+
+GLI_API void gli_bezier_curve(
+    PointGLI *controlPoints, int pNums,
+    ColorGLI col, int segmentsNum,
+    float thickness
+) {
+    struct GraphicsDataGLI data;
+    PointGLI *curvePoints = (PointGLI *)gli_malloc(sizeof(PointGLI) * (segmentsNum + 1));
+
+    for (int i = 0; i <= segmentsNum; i++) {
+        curvePoints[i] = gli_de_casteljau(controlPoints, pNums, (float)i / segmentsNum);
+        //printf("%d - (%f, %f, %f)\n", i, curvePoints[i].x, curvePoints[i].y, curvePoints[i].z);
+    }
+
+    data.mode.draw = GLI_LINE_STRIP;
+    data.mode.color = GLI_COL_ONE;
+    data.vertexNums = segmentsNum + 1;
+    data.vertices = &(curvePoints[0].x);
+    data.colors = &(col.r);
+    data.thickness = thickness;
+    data.filled = GLI_FALSE;
+
+    gli_draw(&data);
+
+    gli_free(curvePoints);
 }
 
 // helper
@@ -488,25 +596,114 @@ GLI_API float gli_cos(float x) {
     return result;
 }
 
+// Quake III Arena - Fast Inverse Square Root
+GLI_API float gli_sqrt(float x) {
+    if (x < 0) {
+        return -1.0f;
+    }
+
+    float xhalf = 0.5f * x;
+    int i = *(int*)&x; // float -> bit
+    i = 0x5f375a86 - (i >> 1); // magic number
+    x = *(float*)&i; // bit -> float
+    x = x * (1.5f - xhalf * x * x); // Newton-Raphson
+    return 1.0f / x;
+}
+
+GLI_API float gli_fabs(float x) {
+    return x < 0 ? -x : x;
+}
+
+GLI_API void gli_orthogonal_basis(const float* normal, float* u, float* v) {
+    if (gli_fabs(normal[0]) > gli_fabs(normal[1])) {
+        float invLength = 1.0f / gli_sqrt(normal[0] * normal[0] + normal[2] * normal[2]);
+        u[0] = -normal[2] * invLength;
+        u[1] = 0.0f;
+        u[2] = normal[0] * invLength;
+
+        v[0] = normal[1] * u[2];
+        v[1] = normal[2] * u[0] - normal[0] * u[2];
+        v[2] = -normal[1] * u[0];
+    } else {
+        float invLength = 1.0f / gli_sqrt(normal[1] * normal[1] + normal[2] * normal[2]);
+        u[0] = 0.0f;
+        u[1] = normal[2] * invLength;
+        u[2] = -normal[1] * invLength;
+
+        v[0] = normal[1] * u[2] - normal[2] * u[1];
+        v[1] = -normal[0] * u[2];
+        v[2] = normal[0] * u[1];
+    }
+}
+
+// TODO: optimize memory
+GLI_API PointGLI gli_de_casteljau(PointGLI *points, float nums, float t) {
+
+    PointGLI staticMem[4] = { 0 };
+    PointGLI retVal;
+    BoolGLI useDynamicMem = nums > 4 ? GLI_TRUE : GLI_FALSE;
+    PointGLI *newPoints =
+        useDynamicMem ? (PointGLI *)gli_malloc(nums * sizeof(PointGLI)) : staticMem;
+
+    if (nums == 1) {
+        retVal = points[0];
+    } else {
+        for (int i = 0; i < nums - 1; i++) {
+            VectorGLI vec = gli_pos_minus(points[i + 1], points[i]);
+            newPoints[i] = gli_pos_plus(points[i], gli_pos_scale(vec, t));
+            //printf("gli_de_casteljau %d - (%f, %f, %f)\n", i, newPoints[i].x, newPoints[i].y, newPoints[i].z);
+        }
+        retVal = gli_de_casteljau(newPoints, nums - 1, t);
+    }
+
+    if (useDynamicMem) gli_free(newPoints);
+
+    return retVal;
+}
+
 GLI_API PointGLI gli_pos_obj(float x, float y, float z) {
     PointGLI p = {x, y, z};
     return p;
 }
 
+GLI_API PointGLI gli_pos_plus(PointGLI p1, PointGLI p2) {
+    PointGLI p = {p1.x + p2.x, p1.y + p2.y, p1.z + p2.z};
+    return p;
+}
+
+GLI_API PointGLI gli_pos_minus(PointGLI p1, PointGLI p2) {
+    PointGLI p = {p1.x - p2.x, p1.y - p2.y, p1.z - p2.z};
+    return p;
+}
+
+GLI_API PointGLI gli_pos_scale(PointGLI p1, float scale) {
+    PointGLI p = {p1.x * scale, p1.y * scale, p1.z * scale};
+    return p;
+}
+
+// vertices:
+//    (0, 1, 2) is center
+//    (3, 4, 5) is normal
 GLI_API void gli_generate_circle_vertices(float *vertices, float radius, int numSegments) {
 
     float angleIncrement = 2.0f * M_PI / numSegments;
 
     float centerX = vertices[0];
     float centerY = vertices[1];
+    float centerZ = vertices[2];
+
+    float u[3], v[3]; // calculated by normal vertor
+    gli_orthogonal_basis(vertices + 3, u, v);
 
     for (int i = 0; i <= numSegments; ++i) {
         float angle = i * angleIncrement;
-        float x = centerX + radius * gli_cos(angle);
-        float y = centerY + radius * gli_sin(angle);
-        vertices[i * 3 + 0] = x;
-        vertices[i * 3 + 1] = y;
-        vertices[i * 3 + 2] = 0;
+        float x = radius * gli_cos(angle);
+        float y = radius * gli_sin(angle);
+
+        // projectin
+        vertices[i * 3 + 0] = centerX + x * u[0] + y * v[0];
+        vertices[i * 3 + 1] = centerY + x * u[1] + y * v[1];
+        vertices[i * 3 + 2] = centerZ + x * u[2] + y * v[2];
     }
 }
 

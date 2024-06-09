@@ -49,12 +49,21 @@ static struct {
         float r, g, b, a;
     } graphics; // default config
     glm::vec4 viewport;
-    float vertexBuff[360];
+    float vertexBuff[7 * 180]; // TODO: use dynamic memory
     // camera
     float fov;
-    glm::vec3 camPos, camTarget, CamDirectionGLI;
+    glm::vec3 camPos, camTarget, camDirectionGLI;
     glm::mat4 model, view, projection;
 } gGLI;
+
+
+void * gli_malloc(unsigned int size) {
+    return malloc(size);
+}
+
+void gli_free(void *ptr) {
+    free(ptr);
+}
 
 void gli_backend_init(void *extend) {
 
@@ -135,14 +144,14 @@ void gli_backend_init(void *extend) {
     gGLI.fov = 45.0f;
     gGLI.camPos = { 0, 0, 5.0f };
     gGLI.camTarget = { 0, 0, 0 };
-    gGLI.CamDirectionGLI = { 0, 1.0f, 0 };
+    gGLI.camDirectionGLI = { 0, 1.0f, 0 };
 
     gCmdMapTable[GLI_POINTS] = GL_POINTS;
     gCmdMapTable[GLI_LINES] = GL_LINES;
     gCmdMapTable[GLI_LINE_STRIP] = GL_LINE_STRIP;
     gCmdMapTable[GLI_LINE_LOOP] = GL_LINE_LOOP;
     gCmdMapTable[GLI_TRIANGLES] = GL_TRIANGLES;
-    gCmdMapTable[GLI_TRIANGLE_STRIP] = GL_TRIANGLE_STRIP;
+    gCmdMapTable[GLI_TRIANGLE_FAN] = GL_TRIANGLE_FAN;
 
 // Config Shader - MVP
     glUseProgram(gShaderProgram);
@@ -181,8 +190,8 @@ void gli_camera_target(float x, float y, float z) {
     gGLI.camTarget = { x, y, z };
 }
 
-void gli_camera_direction(CamDirectionGLI direction) {
-    gGLI.CamDirectionGLI = { direction.x, direction.y, direction.z };
+void gli_camera_direction(VectorGLI direction) {
+    gGLI.camDirectionGLI = { direction.x, direction.y, direction.z };
 }
 
 void gli_camera_fov(float fov) {
@@ -214,7 +223,7 @@ void gli_camera_update() {
     //model = glm::scale(model, glm::vec3(1.0f,1.0f,1.0f));
 
     // View
-    gGLI.view = glm::lookAt(gGLI.camPos, gGLI.camTarget, gGLI.CamDirectionGLI);
+    gGLI.view = glm::lookAt(gGLI.camPos, gGLI.camTarget, gGLI.camDirectionGLI);
 
     // Projection
     gGLI.projection = glm::perspective(
@@ -244,8 +253,10 @@ void gli_backend_deinit() {
 
 void gli_draw(struct GraphicsDataGLI *gData) {
 
-    glPointSize(gData->thickness);
-    glLineWidth(gData->thickness);
+    if (GLI_FALSE == gData->filled) {
+        glPointSize(gData->thickness);
+        glLineWidth(gData->thickness);
+    }
 
     for (int i = 0; i < gData->vertexNums; i++) {
         // pos

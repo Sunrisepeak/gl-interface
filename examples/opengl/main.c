@@ -75,9 +75,21 @@ int main() {
             GLI_POSITION.RIGHT, GLI_POSITION.UP,
             GLI_COLORS.RED
         );
-*/
 
-        gli_circle(GLI_POSITION.ORIGIN, 1, GLI_COLORS.RED, 128, 2);
+
+        gli_circle(GLI_POSITION.UP, 1, GLI_NORMAL.RU, GLI_COLORS.RED, 36, 1);
+        gli_circle_filled(GLI_POSITION.ORIGIN, 1, GLI_NORMAL.RU, GLI_COLORS.GREEN, 8);
+
+*/
+        PointGLI controlPos[4] = {
+            gli_pos_obj(-1, 0, 0),
+            gli_pos_obj(-0.5, 0.5, 1),
+            gli_pos_obj(0.5, 0.5, -1),
+            gli_pos_obj(1, 0, 0)
+        };
+
+        gli_bezier_curve(controlPos, 4, GLI_COLORS.CYAN, 36, 3);
+
 
         gli_camera_rotation(2);
         gli_camera_update();
