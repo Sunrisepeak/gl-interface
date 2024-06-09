@@ -43,6 +43,7 @@ def gli_loader():
     _gli_lib.gli_viewport.argtypes = [ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32]
     _gli_lib.gli_rectangle.argtypes = [PointGLI, PointGLI, ColorGLI, ctypes.c_float]
     _gli_lib.gli_coordinate.argtypes = []
+    _gli_lib.gli_circle.argtypes = [PointGLI, ctypes.c_float, PointGLI, ColorGLI, ctypes.c_int32, ctypes.c_float]
 
 def gli_backend_init(base):
 
@@ -70,6 +71,9 @@ def gli_line(p1, p2, col = ColorGLI(1, 1, 1, 1), thickness = 1):
 
 def gli_rectangle(p1, p2, col = ColorGLI(1, 1, 1, 1), thickness = 1):
     _gli_lib.gli_rectangle(p1, p2, col, thickness)
+
+def gli_circle(center, radius, normal = PointGLI(0, 0, 1), col = ColorGLI(1, 1, 1, 1), segmentsNum = 36, thickness = 1):
+    _gli_lib.gli_circle(center, radius, normal, col, segmentsNum, thickness)
 
 def gli_viewport(x, y, w, h):
     _gli_lib.gli_viewport(x, y, w, h)

@@ -20,3 +20,5 @@ includes("examples/xmake.lua")
 
 -- gli demos
 includes("demos/xmake.lua")
+
+-- TODO: rust-ffi bindgen --with-derive-default --output tmp.rs gl_interface.h

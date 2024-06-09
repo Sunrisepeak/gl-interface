@@ -33,6 +33,7 @@ def main():
 
         gli_line(PointGLI(0, 0), PointGLI(1, 1))
         #gli_rectangle(p1, p2)
+        gli_circle(PointGLI(0, 0), 2)
 
         glfw.swap_buffers(window)
 

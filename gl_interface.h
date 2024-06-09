@@ -15,11 +15,11 @@
 #define GLI_API static inline
 #endif
 
+#define GLI_API_V
+
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
-
-#define GLI_API_V
 
 #define GLI_TRUE 1
 #define GLI_FALSE 0
