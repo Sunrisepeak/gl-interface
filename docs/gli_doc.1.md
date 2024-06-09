@@ -26,7 +26,7 @@ void gli_rectangle(PointGLI p1, PointGLI p2, ColorGLI col, float thickness) {
     float deltaY = p2.y - p1.y;
     float deltaZ = p2.z - p1.z;
 
-    float vertexs[3 * 4] = {
+    float vertices[3 * 4] = {
         p1.x, p1.y, p1.z, // LT
         p1.x + deltaX, p1.y, p1.z + deltaZ, // RT
         p2.x, p2.y, p2.z, // RB
@@ -36,7 +36,7 @@ void gli_rectangle(PointGLI p1, PointGLI p2, ColorGLI col, float thickness) {
     data.mode.draw = GLI_LINE_LOOP;
     data.mode.color = GLI_COL_ONE;
     data.vertexNums = 4;
-    data.vertexs = vertexs;
+    data.vertices = vertices;
     data.colors = &col.r;
 
     gli_draw(&data);

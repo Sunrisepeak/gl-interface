@@ -15,18 +15,20 @@
 #define GLI_API static inline
 #endif
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 #define GLI_API_V
 
-#define TrueGLI 1
-#define FalseGLI 0
+#define GLI_TRUE 1
+#define GLI_FALSE 0
 
 #ifndef bool
 #define BoolGLI int
 #else
 #define BoolGLI bool
 #endif
-
-
 
 #ifdef __cplusplus
 #define GLI_IF_CPP(expr) expr
@@ -174,7 +176,7 @@ struct GraphicsDataGLI {
         enum ColorMode color;
     } mode;
     unsigned int vertexNums;
-    float *vertexs;
+    float *vertices;
     float *colors;
     float thickness;
     BoolGLI filled;
@@ -246,6 +248,11 @@ GLI_API void gli_polygon_filled(PointGLI *points, int pNums, ColorGLI col);
 
 GLI_API void gli_coordinate();
 GLI_API void gli_space();
+
+// helper
+GLI_API float gli_sin(float x);
+GLI_API float gli_cos(float x);
+GLI_API void gli_generate_circle_vertices(float *vertices, float radius, int numSegments);
 GLI_API PointGLI gli_pos_obj(float x, float y, float z);
 GLI_API void gli_pos_normalization(PointGLI *p1, PointGLI *p2);
 GLI_API PointGLI gli_col_obj(float x, float y, float z);
@@ -261,7 +268,7 @@ GLI_API void gli_point(PointGLI p, ColorGLI col, float size) {
     data.mode.color = GLI_COL_ONE;
     data.vertexNums = 1;
     data.colors = &col.r;
-    data.vertexs = &p.x;
+    data.vertices = &p.x;
     data.thickness = size;
 
     gli_draw(&data);
@@ -270,13 +277,13 @@ GLI_API void gli_point(PointGLI p, ColorGLI col, float size) {
 GLI_API void gli_line(PointGLI p1, PointGLI p2, ColorGLI col, float thickness) {
     struct GraphicsDataGLI data;
 
-    float vertexs[2 * 3] = { p1.x, p1.y, p1.z, p2.x, p2.y, p2.z };
+    float vertices[2 * 3] = { p1.x, p1.y, p1.z, p2.x, p2.y, p2.z };
 
     data.mode.draw = GLI_LINES;
     data.mode.color = GLI_COL_ONE;
     data.vertexNums = 2;
     data.colors = &col.r;
-    data.vertexs = vertexs;
+    data.vertices = vertices;
     data.thickness = thickness;
 
     gli_draw(&data);
@@ -289,7 +296,7 @@ GLI_API void gli_line_strip(PointGLI *points, int pNum, ColorGLI col, float thic
     data.mode.color = GLI_COL_ONE;
     data.vertexNums = pNum;
     data.colors = &col.r;
-    data.vertexs = &(points->x);
+    data.vertices = &(points->x);
     data.thickness = thickness;
 
     gli_draw(&data);
@@ -304,7 +311,7 @@ GLI_API void gli_rectangle(PointGLI p1, PointGLI p2, ColorGLI col, float thickne
     float deltaY = p2.y - p1.y;
     float deltaZ = p2.z - p1.z;
 
-    float vertexs[3 * 4] = {
+    float vertices[3 * 4] = {
         p1.x, p1.y, p1.z, // LT
         p1.x + deltaX, p1.y, p1.z + (deltaY == 0 ? 0 : deltaZ), // RT
         p2.x, p2.y, p2.z, // RB
@@ -314,7 +321,7 @@ GLI_API void gli_rectangle(PointGLI p1, PointGLI p2, ColorGLI col, float thickne
     data.mode.draw = GLI_LINE_LOOP;
     data.mode.color = GLI_COL_ONE;
     data.vertexNums = 4;
-    data.vertexs = vertexs;
+    data.vertices = vertices;
     data.colors = &col.r;
 
     gli_draw(&data);
@@ -329,7 +336,7 @@ GLI_API void gli_rectangle_filled(PointGLI p1, PointGLI p2, ColorGLI col) {
     float deltaY = p2.y - p1.y;
     float deltaZ = p2.z - p1.z;
 
-    float vertexs[3 * 3 * 2] = {
+    float vertices[3 * 3 * 2] = {
         p1.x, p1.y, p1.z, // LT
         p1.x + deltaX, p1.y, p1.z + (deltaY == 0 ? 0 : deltaZ), // RT
         p2.x, p2.y, p2.z, // RB
@@ -341,7 +348,7 @@ GLI_API void gli_rectangle_filled(PointGLI p1, PointGLI p2, ColorGLI col) {
     data.mode.draw = GLI_TRIANGLES;
     data.mode.color = GLI_COL_ONE;
     data.vertexNums = 6;
-    data.vertexs = vertexs;
+    data.vertices = vertices;
     data.colors = &col.r;
 
     gli_draw(&data);
@@ -362,7 +369,7 @@ GLI_API void gli_rectangle_base(
     float deltaY = p2.y - p1.y;
     float deltaZ = p2.z - p1.z;
 
-    float vertexs[3 * 4] = {
+    float vertices[3 * 4] = {
         p1.x, p1.y, p1.z, // LT
         p1.x + deltaX, p1.y, p1.z + (deltaY == 0 ? 0 : deltaZ), // RT
         p2.x, p2.y, p2.z, // RB
@@ -372,7 +379,7 @@ GLI_API void gli_rectangle_base(
     data.mode.draw = GLI_LINE_LOOP;
     data.mode.color = GLI_COL_MULTI;
     data.vertexNums = 4;
-    data.vertexs = vertexs;
+    data.vertices = vertices;
     data.colors = &colors[0].r;
     data.thickness = thickness;
 
@@ -386,7 +393,7 @@ GLI_API void gli_polygon(PointGLI *points, int pNums, ColorGLI col, float thickn
     data.mode.draw = GLI_LINE_LOOP;
     data.mode.color = GLI_COL_ONE;
     data.vertexNums = pNums;
-    data.vertexs = &(points[0].x);
+    data.vertices = &(points[0].x);
     data.colors = &col.r;
 
     gli_draw(&data);
@@ -400,12 +407,12 @@ GLI_API void gli_triangle(PointGLI p1, PointGLI p2, PointGLI p3, ColorGLI col, f
 GLI_API void gli_triangle_filled(PointGLI p1, PointGLI p2, PointGLI p3, ColorGLI col) {
     struct GraphicsDataGLI data;
 
-    PointGLI vertexs[3] = {p1, p2, p3};
+    PointGLI vertices[3] = {p1, p2, p3};
 
     data.mode.draw = GLI_TRIANGLE_STRIP;
     data.mode.color = GLI_COL_ONE;
     data.vertexNums = 3;
-    data.vertexs = &(vertexs[0].x);
+    data.vertices = &(vertices[0].x);
     data.colors = &(col.r);
 
     gli_draw(&data);
@@ -419,23 +426,88 @@ GLI_API void gli_triangle_base(
 ) {
     struct GraphicsDataGLI data;
 
-    PointGLI vertexs[3] = {p1, p2, p3};
+    PointGLI vertices[3] = {p1, p2, p3};
     ColorGLI colors[3] = {col1, col2, col3};
 
-    data.mode.draw = filled ? GLI_TRIANGLES : GLI_LINE_STRIP;
+    data.mode.draw = filled ? GLI_TRIANGLES : GLI_LINE_LOOP;
     data.mode.color = GLI_COL_MULTI;
     data.vertexNums = 3;
-    data.vertexs = &(vertexs[0].x);
+    data.vertices = &(vertices[0].x);
     data.colors = &(colors[0].r);
+
+    gli_draw(&data);
+}
+
+GLI_API void gli_circle(
+    PointGLI center, float radius, ColorGLI col,
+    int segmentsNum, float thickness
+) {
+    struct GraphicsDataGLI data;
+    float vertices[3 * 100] = { center.x, center.y, 0 };
+
+    gli_generate_circle_vertices(vertices, radius, 36);
+
+    data.mode.draw = GLI_LINE_LOOP;
+    data.mode.color = GLI_COL_ONE;
+    data.vertexNums = 36;
+    data.vertices = vertices;
+    data.colors = &(col.r);
+    data.thickness = thickness;
+    data.filled = GLI_FALSE;
 
     gli_draw(&data);
 }
 
 // helper
 
+GLI_API float gli_sin(float x) {
+    double result = 0.0;
+    double term = x;
+    int sign = 1;
+
+    for (int n = 1; n <= 10; ++n) {
+        result += sign * term;
+        term *= x * x / ((2 * n) * (2 * n + 1));
+        sign = -sign;
+    }
+
+    return result;
+}
+
+GLI_API float gli_cos(float x) {
+    double result = 1.0;
+    double term = 1.0;
+    int sign = -1;
+
+    for (int n = 1; n <= 10; ++n) {
+        term *= x * x / ((2 * n - 1) * (2 * n));
+        result += sign * term;
+        sign = -sign;
+    }
+
+    return result;
+}
+
 GLI_API PointGLI gli_pos_obj(float x, float y, float z) {
     PointGLI p = {x, y, z};
     return p;
+}
+
+GLI_API void gli_generate_circle_vertices(float *vertices, float radius, int numSegments) {
+
+    float angleIncrement = 2.0f * M_PI / numSegments;
+
+    float centerX = vertices[0];
+    float centerY = vertices[1];
+
+    for (int i = 0; i <= numSegments; ++i) {
+        float angle = i * angleIncrement;
+        float x = centerX + radius * gli_cos(angle);
+        float y = centerY + radius * gli_sin(angle);
+        vertices[i * 3 + 0] = x;
+        vertices[i * 3 + 1] = y;
+        vertices[i * 3 + 2] = 0;
+    }
 }
 
 GLI_API ColorGLI gli_color_obj(float r, float g, float b, float a) {

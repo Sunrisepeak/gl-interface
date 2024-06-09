@@ -49,7 +49,7 @@ static struct {
         float r, g, b, a;
     } graphics; // default config
     glm::vec4 viewport;
-    float vertexBuff[100];
+    float vertexBuff[360];
     // camera
     float fov;
     glm::vec3 camPos, camTarget, CamDirectionGLI;
@@ -95,7 +95,7 @@ void gli_backend_init(void *extend) {
 
     // config vertex buff
     glBindBuffer(GL_ARRAY_BUFFER, gVBO);
-    //glBufferData(GL_ARRAY_BUFFER, sizeof(gVertexsBuff), gVertexsBuff, GL_STATIC_DRAW);
+    //glBufferData(GL_ARRAY_BUFFER, sizeof(gverticesBuff), gVerticesBuff, GL_STATIC_DRAW);
     glBufferData(GL_ARRAY_BUFFER, sizeof(gGLI.vertexBuff), gGLI.vertexBuff, GL_DYNAMIC_DRAW);
 
     // config position
@@ -249,9 +249,9 @@ void gli_draw(struct GraphicsDataGLI *gData) {
 
     for (int i = 0; i < gData->vertexNums; i++) {
         // pos
-        gGLI.vertexBuff[7 * i] = gData->vertexs[3 * i];
-        gGLI.vertexBuff[7 * i + 1] = gData->vertexs[3 * i + 1];
-        gGLI.vertexBuff[7 * i + 2] = gData->vertexs[3 * i + 2];
+        gGLI.vertexBuff[7 * i] = gData->vertices[3 * i];
+        gGLI.vertexBuff[7 * i + 1] = gData->vertices[3 * i + 1];
+        gGLI.vertexBuff[7 * i + 2] = gData->vertices[3 * i + 2];
 
         // color
         if (gData->mode.color == GLI_COL_ONE) {

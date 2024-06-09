@@ -53,14 +53,14 @@ int main() {
             GLI_POSITION.FRONT, GLI_COLORS.RED,
             GLI_POSITION.RIGHT, GLI_COLORS.GREEN,
             GLI_POSITION.UP, GLI_COLORS.BLUE,
-            TrueGLI
+            GLI_TRUE
         );
 
         gli_triangle_filled(
             GLI_POSITION.BACK, GLI_POSITION.LEFT, GLI_POSITION.DOWN,
             GLI_COLORS.BLUE
         );
-*/
+
         gli_rectangle_filled(
             GLI_POSITION.FRONT, GLI_POSITION.RIGHT,
             GLI_COLORS.BLUE
@@ -75,6 +75,9 @@ int main() {
             GLI_POSITION.RIGHT, GLI_POSITION.UP,
             GLI_COLORS.RED
         );
+*/
+
+        gli_circle(GLI_POSITION.ORIGIN, 1, GLI_COLORS.RED, 128, 2);
 
         gli_camera_rotation(2);
         gli_camera_update();
