@@ -141,6 +141,8 @@ void gli_backend_init(void *extend) {
     gCmdMapTable[GLI_LINES] = GL_LINES;
     gCmdMapTable[GLI_LINE_STRIP] = GL_LINE_STRIP;
     gCmdMapTable[GLI_LINE_LOOP] = GL_LINE_LOOP;
+    gCmdMapTable[GLI_TRIANGLES] = GL_TRIANGLES;
+    gCmdMapTable[GLI_TRIANGLE_STRIP] = GL_TRIANGLE_STRIP;
 
 // Config Shader - MVP
     glUseProgram(gShaderProgram);

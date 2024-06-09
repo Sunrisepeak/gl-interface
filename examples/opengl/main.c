@@ -45,10 +45,36 @@ int main() {
         gli_coordinate();
         gli_space();
 
-        //gli_line(GLI_POSITION.ORIGIN, GLI_POSITION.RUF, GLI_COLORS.WHITE, 1);
         //gli_point(GLI_POSITION.ORIGIN, GLI_COLORS.ORANGE, 5);
-
+        //gli_line(GLI_POSITION.ORIGIN, GLI_POSITION.RUF, GLI_COLORS.WHITE, 1);
         //gli_rectangle(gli_pos_obj(0, 0, 1), gli_pos_obj(1, 1, 0), GLI_COLORS.PURPLE, 1);
+/*
+        gli_triangle_base(
+            GLI_POSITION.FRONT, GLI_COLORS.RED,
+            GLI_POSITION.RIGHT, GLI_COLORS.GREEN,
+            GLI_POSITION.UP, GLI_COLORS.BLUE,
+            TrueGLI
+        );
+
+        gli_triangle_filled(
+            GLI_POSITION.BACK, GLI_POSITION.LEFT, GLI_POSITION.DOWN,
+            GLI_COLORS.BLUE
+        );
+*/
+        gli_rectangle_filled(
+            GLI_POSITION.FRONT, GLI_POSITION.RIGHT,
+            GLI_COLORS.BLUE
+        );
+
+        gli_rectangle_filled(
+            GLI_POSITION.FRONT, GLI_POSITION.UP,
+            GLI_COLORS.GREEN
+        );
+
+        gli_rectangle_filled(
+            GLI_POSITION.RIGHT, GLI_POSITION.UP,
+            GLI_COLORS.RED
+        );
 
         gli_camera_rotation(2);
         gli_camera_update();

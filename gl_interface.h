@@ -17,6 +17,9 @@
 
 #define GLI_API_V
 
+#define TrueGLI 1
+#define FalseGLI 0
+
 #ifndef bool
 #define BoolGLI int
 #else
@@ -37,6 +40,8 @@ enum DrawMode {
     GLI_LINES = 1,
     GLI_LINE_STRIP = 2,
     GLI_LINE_LOOP = 3,
+    GLI_TRIANGLES = 4,
+    GLI_TRIANGLE_STRIP = 5,
 };
 
 enum ColorMode {
@@ -83,6 +88,11 @@ static const struct {
     const PointGLI DF;
     const PointGLI DB;
     const PointGLI UB;
+
+    const PointGLI RF;
+    const PointGLI RB;
+    const PointGLI LF;
+    const PointGLI LB;
     // 3d
     const PointGLI RUF;
     const PointGLI RDF;
@@ -113,6 +123,11 @@ static const struct {
     .DF = { 0, -1.0f, 1.0f },
     .DB = { 0, -1.0f, -1.0f },
     .UB = { 0, 1.0f, -1.0f },
+
+    .RF = { 1.0f, 0, 1.0f },
+    .RB = { 1.0f, 0, -1.0f },
+    .LF = { -1.0f, 0, 1.0f },
+    .LB = { -1.0f, 0, -1.0f },
 
     // 3d
     .RUF = { 1.0f, 1.0f, 1.0f },
@@ -188,14 +203,6 @@ GLI_API void gli_line(PointGLI p1, PointGLI p2, ColorGLI col, float thickness GL
 GLI_API void gli_line_base(PointGLI p1, ColorGLI col1, PointGLI p2, ColorGLI col2, float thickness);
 GLI_API void gli_line_strip(PointGLI *points, int pNum, ColorGLI col, float thickness);
 GLI_API void gli_line_strip_base(PointGLI *points, int pNum, ColorGLI col, float thickness);
-// rectangle
-GLI_API void gli_rectangle(PointGLI p1, PointGLI p2, ColorGLI col, float thickness);
-GLI_API void gli_rectangle_filled(PointGLI p1, PointGLI p2, ColorGLI col);
-GLI_API void gli_rectangle_base(
-    PointGLI p1, PointGLI p2,
-    ColorGLI colRD, ColorGLI colRU, ColorGLI colLU, ColorGLI colLD,
-    BoolGLI filled GLI_IF_CPP(= false), float thickness GLI_IF_CPP(= 1.0)
-);
 
 // triangle
 GLI_API void gli_triangle(PointGLI p1, PointGLI p2, PointGLI p3, ColorGLI col, float thickness GLI_IF_CPP(= 1.0));
@@ -205,6 +212,15 @@ GLI_API void gli_triangle_base(
     PointGLI p2, ColorGLI col2,
     PointGLI p3, ColorGLI col3,
     BoolGLI filled GLI_IF_CPP(= false)
+);
+
+// rectangle - TODO: test 2d and 3d (0, 1)-(1, 0) and delta(x or y or z) = 0
+GLI_API void gli_rectangle(PointGLI p1, PointGLI p2, ColorGLI col, float thickness);
+GLI_API void gli_rectangle_filled(PointGLI p1, PointGLI p2, ColorGLI col);
+GLI_API void gli_rectangle_base(
+    PointGLI p1, PointGLI p2,
+    ColorGLI colRD, ColorGLI colRU, ColorGLI colLU, ColorGLI colLD,
+    BoolGLI filled GLI_IF_CPP(= false), float thickness GLI_IF_CPP(= 1.0)
 );
 
 // circle and ngon
@@ -231,6 +247,7 @@ GLI_API void gli_polygon_filled(PointGLI *points, int pNums, ColorGLI col);
 GLI_API void gli_coordinate();
 GLI_API void gli_space();
 GLI_API PointGLI gli_pos_obj(float x, float y, float z);
+GLI_API void gli_pos_normalization(PointGLI *p1, PointGLI *p2);
 GLI_API PointGLI gli_col_obj(float x, float y, float z);
 
 #ifdef __cplusplus
@@ -281,20 +298,49 @@ GLI_API void gli_line_strip(PointGLI *points, int pNum, ColorGLI col, float thic
 GLI_API void gli_rectangle(PointGLI p1, PointGLI p2, ColorGLI col, float thickness) {
     struct GraphicsDataGLI data;
 
+    gli_pos_normalization(&p1, &p2);
+
     float deltaX = p2.x - p1.x;
     float deltaY = p2.y - p1.y;
     float deltaZ = p2.z - p1.z;
 
     float vertexs[3 * 4] = {
         p1.x, p1.y, p1.z, // LT
-        p1.x + deltaX, p1.y, p1.z + deltaZ, // RT
+        p1.x + deltaX, p1.y, p1.z + (deltaY == 0 ? 0 : deltaZ), // RT
         p2.x, p2.y, p2.z, // RB
-        p1.x, p1.y + deltaY, p1.z // LB
+        p1.x, p1.y + deltaY, p1.z + (deltaY == 0 ? deltaZ : 0) // LB
     };
 
     data.mode.draw = GLI_LINE_LOOP;
     data.mode.color = GLI_COL_ONE;
     data.vertexNums = 4;
+    data.vertexs = vertexs;
+    data.colors = &col.r;
+
+    gli_draw(&data);
+}
+
+GLI_API void gli_rectangle_filled(PointGLI p1, PointGLI p2, ColorGLI col) {
+    struct GraphicsDataGLI data;
+
+    gli_pos_normalization(&p1, &p2);
+
+    float deltaX = p2.x - p1.x;
+    float deltaY = p2.y - p1.y;
+    float deltaZ = p2.z - p1.z;
+
+    float vertexs[3 * 3 * 2] = {
+        p1.x, p1.y, p1.z, // LT
+        p1.x + deltaX, p1.y, p1.z + (deltaY == 0 ? 0 : deltaZ), // RT
+        p2.x, p2.y, p2.z, // RB
+        p2.x, p2.y, p2.z, // RB
+        p1.x, p1.y + deltaY, p1.z + (deltaY == 0 ? deltaZ : 0), // LB
+        p1.x, p1.y, p1.z, // LT
+    };
+
+    data.mode.draw = GLI_TRIANGLES;
+    data.mode.color = GLI_COL_ONE;
+    data.vertexNums = 6;
     data.vertexs = vertexs;
     data.colors = &col.r;
 
@@ -310,15 +356,17 @@ GLI_API void gli_rectangle_base(
 
     ColorGLI colors[4] = { colRD, colRU, colLU, colLD };
 
+    gli_pos_normalization(&p1, &p2);
+
     float deltaX = p2.x - p1.x;
     float deltaY = p2.y - p1.y;
     float deltaZ = p2.z - p1.z;
 
     float vertexs[3 * 4] = {
         p1.x, p1.y, p1.z, // LT
-        p1.x + deltaX, p1.y, p1.z + deltaZ, // RT
+        p1.x + deltaX, p1.y, p1.z + (deltaY == 0 ? 0 : deltaZ), // RT
         p2.x, p2.y, p2.z, // RB
-        p1.x, p1.y + deltaY, p1.z // LB
+        p1.x, p1.y + deltaY, p1.z + (deltaY == 0 ? deltaZ : 0) // LB
     };
 
     data.mode.draw = GLI_LINE_LOOP;
@@ -349,6 +397,39 @@ GLI_API void gli_triangle(PointGLI p1, PointGLI p2, PointGLI p3, ColorGLI col, f
     gli_polygon(points, 3, col, 1);  
 }
 
+GLI_API void gli_triangle_filled(PointGLI p1, PointGLI p2, PointGLI p3, ColorGLI col) {
+    struct GraphicsDataGLI data;
+
+    PointGLI vertexs[3] = {p1, p2, p3};
+
+    data.mode.draw = GLI_TRIANGLE_STRIP;
+    data.mode.color = GLI_COL_ONE;
+    data.vertexNums = 3;
+    data.vertexs = &(vertexs[0].x);
+    data.colors = &(col.r);
+
+    gli_draw(&data);
+}
+
+GLI_API void gli_triangle_base(
+    PointGLI p1, ColorGLI col1,
+    PointGLI p2, ColorGLI col2,
+    PointGLI p3, ColorGLI col3,
+    BoolGLI filled
+) {
+    struct GraphicsDataGLI data;
+
+    PointGLI vertexs[3] = {p1, p2, p3};
+    ColorGLI colors[3] = {col1, col2, col3};
+
+    data.mode.draw = filled ? GLI_TRIANGLES : GLI_LINE_STRIP;
+    data.mode.color = GLI_COL_MULTI;
+    data.vertexNums = 3;
+    data.vertexs = &(vertexs[0].x);
+    data.colors = &(colors[0].r);
+
+    gli_draw(&data);
+}
 
 // helper
 
@@ -360,6 +441,20 @@ GLI_API PointGLI gli_pos_obj(float x, float y, float z) {
 GLI_API ColorGLI gli_color_obj(float r, float g, float b, float a) {
     ColorGLI col = {r, g, b, a};
     return col;
+}
+
+GLI_API void gli_pos_normalization(PointGLI *p1, PointGLI *p2) {
+    PointGLI p;
+    // TODO: Optimize
+    p.x = p1->x < p2->x ? p1->x : p2->x;
+    p.y = p1->y < p2->y ? p1->y : p2->y;
+    p.z = p1->z < p2->z ? p1->z : p2->z;
+    p2->x = p1->x > p2->x ? p1->x : p2->x;
+    p2->y = p1->y > p2->y ? p1->y : p2->y;
+    p2->z = p1->z > p2->z ? p1->z : p2->z;
+    p1->x = p.x;
+    p1->y = p.y;
+    p1->z = p.z;
 }
 
 GLI_API PointGLI gli_pos_add(PointGLI p1, PointGLI p2) {
@@ -391,6 +486,11 @@ GLI_API void gli_space() {
     gli_point(GLI_POSITION.DF, GLI_COLORS.GREEN, 5);
     gli_point(GLI_POSITION.DB, GLI_COLORS.GREEN, 5);
     gli_point(GLI_POSITION.UB, GLI_COLORS.GREEN, 5);
+
+    gli_point(GLI_POSITION.RF, GLI_COLORS.GREEN, 5);
+    gli_point(GLI_POSITION.RB, GLI_COLORS.GREEN, 5);
+    gli_point(GLI_POSITION.LF, GLI_COLORS.GREEN, 5);
+    gli_point(GLI_POSITION.LB, GLI_COLORS.GREEN, 5); 
 
     gli_point(GLI_POSITION.RUF, GLI_COLORS.BLUE, 5);
     gli_point(GLI_POSITION.RDF, GLI_COLORS.BLUE, 5);
