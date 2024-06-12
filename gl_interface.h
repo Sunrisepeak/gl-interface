@@ -184,22 +184,52 @@ struct GraphicsDataGLI {
     BoolGLI filled;
 };
 
+// --------------------- GLI_API_V ----------------------
+
 // Core API
 GLI_API_V void * gli_malloc(unsigned int size);
 GLI_API_V void gli_free(void *ptr);
+
+// init/deinit
 GLI_API_V void gli_backend_init(void *extend);
-GLI_API_V void gli_viewport(int x, int y, int w, int h);
-GLI_API_V void gli_clear();
-GLI_API_V void gli_draw(struct GraphicsDataGLI *gData);
 GLI_API_V void gli_backend_deinit();
 
-// Option - 3D Support
+// config
+GLI_API_V void gli_viewport(int x, int y, int w, int h);
+
+// gli 2d
+#define GLI_2D(size, x, y, code_block) gli_2d(size, x, y); code_block; gli_camera_update()
+GLI_API_V void gli_2d(float size, float x, float y);
+
+// gli 3d
 GLI_API_V void gli_camera_pos(float x, float y, float z);
 GLI_API_V void gli_camera_target(float x, float y, float z);
 GLI_API_V void gli_camera_direction(VectorGLI direction);
 GLI_API_V void gli_camera_fov(float fov);
-GLI_API_V void gli_camera_rotation(float angle);
+GLI_API_V void gli_camera_aspect(float aspect);
+GLI_API_V void gli_camera_clipping(float near, float far);
 GLI_API_V void gli_camera_update();
+
+
+// render
+GLI_API_V void gli_clear(float r, float g, float b, float a);
+GLI_API_V void gli_draw(struct GraphicsDataGLI *gData);
+GLI_API_V void gli_render();
+
+// data process
+GLI_API_V void * gli_frame_buff();
+
+// math
+GLI_API_V float gli_sin(float x);
+GLI_API_V float gli_cos(float x);
+
+
+// --------------------- GLI_API ----------------------
+
+
+GLI_API void gli_view(VectorGLI pos, VectorGLI target, VectorGLI direction);
+GLI_API void gli_projection(float fov, float aspect, float near, float far);
+GLI_API void gli_camera_rotation(float angle);
 
 
 /////// - graphics api
@@ -257,8 +287,6 @@ GLI_API void gli_space();
 
 //// helper
 //math
-GLI_API float gli_sin(float x);
-GLI_API float gli_cos(float x);
 GLI_API float gli_sqrt(float x);
 GLI_API float gli_fabs(float x);
 
@@ -277,6 +305,30 @@ GLI_API PointGLI gli_col_obj(float x, float y, float z);
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
+
+GLI_API void gli_view(VectorGLI pos, VectorGLI target, VectorGLI direction) {
+    gli_camera_pos(pos.x, pos.y, pos.z);
+    gli_camera_target(target.x, target.y, target.z);
+    gli_camera_direction(direction);
+}
+
+GLI_API void gli_projection(float fov, float aspect, float near, float far) {
+    gli_camera_fov(fov);
+    gli_camera_aspect(aspect);
+    gli_camera_clipping(near, far);
+}
+
+GLI_API void gli_camera_rotation(float angle) {
+    static unsigned short currentAngle = 0;
+    static float camX, camZ;
+
+    currentAngle = currentAngle + angle;
+    camX = gli_sin(currentAngle * 0.01) * 5;
+    camZ = gli_cos(currentAngle * 0.01) * 5;
+
+    gli_camera_pos(camX, 3, camZ);
+}
+
 
 GLI_API void gli_point(PointGLI p, ColorGLI col, float size) {
     struct GraphicsDataGLI data;
@@ -567,34 +619,6 @@ GLI_API void gli_bezier_curve(
 }
 
 // helper
-
-GLI_API float gli_sin(float x) {
-    double result = 0.0;
-    double term = x;
-    int sign = 1;
-
-    for (int n = 1; n <= 10; ++n) {
-        result += sign * term;
-        term *= x * x / ((2 * n) * (2 * n + 1));
-        sign = -sign;
-    }
-
-    return result;
-}
-
-GLI_API float gli_cos(float x) {
-    double result = 1.0;
-    double term = 1.0;
-    int sign = -1;
-
-    for (int n = 1; n <= 10; ++n) {
-        term *= x * x / ((2 * n - 1) * (2 * n));
-        result += sign * term;
-        sign = -sign;
-    }
-
-    return result;
-}
 
 // Quake III Arena - Fast Inverse Square Root
 GLI_API float gli_sqrt(float x) {

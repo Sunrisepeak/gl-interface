@@ -34,13 +34,15 @@ int main() {
     gli_backend_init(glfwGetProcAddress);
     gli_viewport(0, 0, 800, 600);
 
-    gli_camera_pos(0, 3, 5);
+    gli_camera_pos(0, 5, 5);
     gli_camera_update();
 
     while (!glfwWindowShouldClose(window)) {
         processInput(window);
 
-        gli_clear();
+        gli_clear(0.2, 0.1, 0.3, 0.5);
+
+        gli_camera_rotation(2);
 
         gli_coordinate();
         gli_space();
@@ -90,9 +92,25 @@ int main() {
 
         gli_bezier_curve(controlPos, 4, GLI_COLORS.CYAN, 36, 3);
 
+        GLI_2D(3, 0, 0, {
+            gli_rectangle(
+                gli_pos_obj(1, 1, 0), gli_pos_obj(2, 2, 0),
+                GLI_COLORS.ORANGE, 3
+            );
+        });
 
-        gli_camera_rotation(2);
-        gli_camera_update();
+        gli_rectangle(
+            gli_pos_obj(1, 1, 0), gli_pos_obj(2, 2, 0),
+            GLI_COLORS.ORANGE, 3
+        );
+
+        GLI_2D(3, 0, 0, {
+            gli_line(
+                gli_pos_obj(1, 1, 0), gli_pos_obj(2, 2, 0),
+                GLI_COLORS.ORANGE, 3
+            );
+        });
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     }

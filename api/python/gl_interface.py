@@ -39,7 +39,7 @@ def gli_loader():
     addr = ctypes.cast(_gli_lib.gli_backend_init, ctypes.c_void_p).value
     print(f"python - gli_backend_init: {addr:#x}")
 
-    _gli_lib.gli_clear.argtypes = []
+    _gli_lib.gli_clear.argtypes = [ctypes.c_float, ctypes.c_float, ctypes.c_float, ctypes.c_float]
     _gli_lib.gli_viewport.argtypes = [ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32]
     _gli_lib.gli_rectangle.argtypes = [PointGLI, PointGLI, ColorGLI, ctypes.c_float]
     _gli_lib.gli_coordinate.argtypes = []
@@ -60,8 +60,8 @@ def gli_backend_init(base):
     
     print("python - init done")
 
-def gli_clear():
-    _gli_lib.gli_clear()
+def gli_clear(r = 0, g = 0, b = 0, a = 1):
+    _gli_lib.gli_clear(r, g, b, a)
 
 def gli_backend_deinit():
     _gli_lib.gli_backend_deinit()

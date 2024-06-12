@@ -51,7 +51,7 @@ static struct {
     glm::vec4 viewport;
     float vertexBuff[7 * 180]; // TODO: use dynamic memory
     // camera
-    float fov;
+    float fov, aspect, near, far;
     glm::vec3 camPos, camTarget, camDirectionGLI;
     glm::mat4 model, view, projection;
 } gGLI;
@@ -140,8 +140,8 @@ void gli_backend_init(void *extend) {
     //glGetFloatv(GL_LINE_WIDTH_RANGE, lineWidthRange);
     //printf("line width: %f\n", lineWidthRange[1]);
 
-    gGLI.window.w = gGLI.window.h = 0;
-    gGLI.fov = 45.0f;
+    gGLI.fov = 45.0f; gGLI.aspect = 1;
+    gGLI.near = 1, gGLI.far = -1;
     gGLI.camPos = { 0, 0, 5.0f };
     gGLI.camTarget = { 0, 0, 0 };
     gGLI.camDirectionGLI = { 0, 1.0f, 0 };
@@ -167,18 +167,13 @@ void gli_backend_init(void *extend) {
 }
 
 void gli_viewport(int x, int y, int w, int h) {
-    if (x < 0 || y < 0 || gGLI.window.w == 0) {
-        // TODO: when gli_viewport(0, 0, w, h) after first call
-        // avoid 
-        gGLI.window.w = w; gGLI.window.h = h;
-    }
-    // A -> B -> B' -> A'
-    gGLI.viewport = {x, gGLI.window.h - y - h, w, h};
-    glViewport(x, gGLI.window.h - y - h, w, h);
+    gGLI.aspect = w * 1.0 / h;
+    gGLI.viewport = {x, y, w, h};
+    glViewport(x, y, w, h);
 }
 
-void gli_clear() {
-    glClearColor(0, 0, 0, 1.0f);
+void gli_clear(float r, float g, float b, float a) {
+    glClearColor(r, g, b, a);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
@@ -198,16 +193,32 @@ void gli_camera_fov(float fov) {
     gGLI.fov = fov;
 }
 
-void gli_camera_rotation(float angle) {
-    static unsigned short currentAngle = 0;
-    static float camX, camZ;
+GLI_API_V void gli_camera_aspect(float aspect) {
+    gGLI.aspect = aspect;
+}
 
-    currentAngle = currentAngle + angle;
-    camX = sin(currentAngle * 0.01) * 5;
-    camZ = cos(currentAngle * 0.01) * 5;
+GLI_API_V void gli_camera_clipping(float near, float far) {
+    gGLI.near = near;
+    gGLI.near = far;
+}
 
-    gGLI.camPos.x = camX;
-    gGLI.camPos.z = camZ;
+
+GLI_API_V void gli_2d(float size, float x, float y) {
+    // send data to shader
+    glUniformMatrix4fv(
+        glGetUniformLocation(gShaderProgram, "view"),
+        1, GL_FALSE,
+        glm::value_ptr(glm::mat4(1))
+    );
+    glUniformMatrix4fv(
+        glGetUniformLocation(gShaderProgram, "projection"),
+        1, GL_FALSE,
+        glm::value_ptr(glm::ortho(
+            -size * gGLI.aspect + x, size * gGLI.aspect + x,
+            -size + y, size + y,
+            -size, size
+        ))
+    );
 }
 
 void gli_camera_update() {
@@ -228,8 +239,8 @@ void gli_camera_update() {
     // Projection
     gGLI.projection = glm::perspective(
         glm::radians(gGLI.fov),
-        gGLI.viewport[2] / gGLI.viewport[3], // viewport
-        0.1f, 100.0f
+        gGLI.aspect, // viewport w/h(default) or aspect
+        gGLI.near, gGLI.far
     );
 
     // update shader mvp matrix
@@ -289,4 +300,16 @@ void gli_draw(struct GraphicsDataGLI *gData) {
 
     // send draw cmd
     glDrawArrays(gCmdMapTable[gData->mode.draw], 0, gData->vertexNums);
+}
+
+GLI_API_V void gli_render() {
+    
+}
+
+GLI_API_V float gli_sin(float x) {
+    return sin(x);
+}
+
+GLI_API_V float gli_cos(float x) {
+    return cos(x);
 }

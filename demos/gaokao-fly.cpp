@@ -41,7 +41,7 @@ int main() {
 
     while (!glfwWindowShouldClose(window)) {
         processInput(window);
-        gli_clear();
+        gli_clear(0, 0, 0, 1);
 
         gli_camera_rotation(2);
         gli_camera_update();

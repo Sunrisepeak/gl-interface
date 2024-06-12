@@ -739,6 +739,9 @@ extern "C" {
     pub fn gli_backend_init(extend: *mut ::std::os::raw::c_void);
 }
 extern "C" {
+    pub fn gli_backend_deinit();
+}
+extern "C" {
     pub fn gli_viewport(
         x: ::std::os::raw::c_int,
         y: ::std::os::raw::c_int,
@@ -747,13 +750,7 @@ extern "C" {
     );
 }
 extern "C" {
-    pub fn gli_clear();
-}
-extern "C" {
-    pub fn gli_draw(gData: *mut GraphicsDataGLI);
-}
-extern "C" {
-    pub fn gli_backend_deinit();
+    pub fn gli_2d(size: f32, x: f32, y: f32);
 }
 extern "C" {
     pub fn gli_camera_pos(x: f32, y: f32, z: f32);
@@ -768,10 +765,40 @@ extern "C" {
     pub fn gli_camera_fov(fov: f32);
 }
 extern "C" {
-    pub fn gli_camera_rotation(angle: f32);
+    pub fn gli_camera_aspect(aspect: f32);
+}
+extern "C" {
+    pub fn gli_camera_clipping(near: f32, far: f32);
 }
 extern "C" {
     pub fn gli_camera_update();
+}
+extern "C" {
+    pub fn gli_clear(r: f32, g: f32, b: f32, a: f32);
+}
+extern "C" {
+    pub fn gli_draw(gData: *mut GraphicsDataGLI);
+}
+extern "C" {
+    pub fn gli_render();
+}
+extern "C" {
+    pub fn gli_frame_buff() -> *mut ::std::os::raw::c_void;
+}
+extern "C" {
+    pub fn gli_sin(x: f32) -> f32;
+}
+extern "C" {
+    pub fn gli_cos(x: f32) -> f32;
+}
+extern "C" {
+    pub fn gli_view(pos: VectorGLI, target: VectorGLI, direction: VectorGLI);
+}
+extern "C" {
+    pub fn gli_projection(fov: f32, aspect: f32, near: f32, far: f32);
+}
+extern "C" {
+    pub fn gli_camera_rotation(angle: f32);
 }
 extern "C" {
     #[doc = " - graphics api"]
@@ -904,12 +931,6 @@ extern "C" {
 }
 extern "C" {
     #[doc = " helper"]
-    pub fn gli_sin(x: f32) -> f32;
-}
-extern "C" {
-    pub fn gli_cos(x: f32) -> f32;
-}
-extern "C" {
     pub fn gli_sqrt(x: f32) -> f32;
 }
 extern "C" {
