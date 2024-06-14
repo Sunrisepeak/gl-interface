@@ -40,6 +40,7 @@ extern "C" {
 #endif
 
 enum DrawMode {
+    GLI_NONE = -1,
     GLI_POINTS = 0,
     GLI_LINES = 1,
     GLI_LINE_STRIP = 2,
