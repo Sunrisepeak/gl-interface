@@ -12,6 +12,14 @@ target("gli-opengl-static-c")
     add_files("opengl/main.c")
     add_packages("glfw", "glad", "glm")
 
+--- opengl es
+target("gli-opengles-c")
+    set_kind("binary")
+    add_deps("gli-opengles")
+    add_files("opengles/main.c")
+    add_packages("glfw", "glm")
+
+--- pip3 install glfw
 target("gli-opengl-py")
     set_kind("phony")
 
